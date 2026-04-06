@@ -17,6 +17,7 @@ export class AgentSimulation {
   private unsubs: (() => void)[] = [];
   private heartbeatInterval: any = null;
   private lastSparkTriggerTime: number = 0;
+  private socket: WebSocket | null = null;
 
   constructor(system: AgenticSystem) {
     this.system = system;
@@ -50,6 +51,15 @@ export class AgentSimulation {
 
         // C. Project Completion
         this.checkProjectCompletion();
+
+        // D. WebSocket Bridge Implementation
+        if (state.workflowId !== prevState.workflowId) {
+          if (state.workflowId) {
+            this.connectToBackendStream(state.workflowId);
+          } else {
+            this.disconnectFromBackendStream();
+          }
+        }
       })
     );
 
@@ -62,6 +72,64 @@ export class AgentSimulation {
         }
       })
     );
+  }
+
+  private connectToBackendStream(workflowId: string) {
+    this.disconnectFromBackendStream();
+    
+    console.log(`[AgentSimulation] Connecting to stream for workflow: ${workflowId}`);
+    this.socket = new WebSocket(`ws://localhost:8000/api/v1/stream/${workflowId}`);
+    
+    this.socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.handleExternalEvent(data);
+      } catch (err) {
+        console.error('[AgentSimulation] Failed to parse WS event:', err);
+      }
+    };
+
+    this.socket.onerror = (err) => console.error('[AgentSimulation] WS Error:', err);
+    this.socket.onclose = () => {
+       console.log('[AgentSimulation] WS Stream closed.');
+       useCoreStore.getState().setWorkflowId(null);
+    };
+  }
+
+  private disconnectFromBackendStream() {
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
+    }
+  }
+
+  private async handleExternalEvent(event: any) {
+    if (event.type === 'agent_action') {
+      const allAgents = getAllAgents(this.system);
+      const agentNode = allAgents.find(a => a.name.toLowerCase().includes(event.agent.toLowerCase()) || a.id.toLowerCase().includes(event.agent.toLowerCase()));
+      
+      if (agentNode) {
+        const agentHost = this.getAgent(agentNode.index);
+        if (agentHost) {
+          // Sync state and trigger visual feedback
+          const isDone = event.status === 'done';
+          agentHost.setState(isDone ? 'idle' : 'working');
+          
+          // Add to internal history for Technical Log
+          agentHost.appendHistory({
+             role: 'assistant',
+             content: event.message,
+             metadata: { internal: true, technical: true, action: event.action }
+          });
+        }
+      }
+    } else if (event.type === 'workflow_complete') {
+       useCoreStore.getState().addLogEntry({
+          agentIndex: 1, // Alex
+          action: 'Orchestration Complete',
+       });
+       this.disconnectFromBackendStream();
+    }
   }
 
   /** Central method to check for and start available tasks. */
@@ -154,10 +222,11 @@ export class AgentSimulation {
     return Array.from(this.agents.values());
   }
 
-
-
   public async handleUserMessage(agentIndex: number, text: string) {
-    const agent = this.getAgent(agentIndex);
+    // If user is selected (index 0), route the message to the Lead Agent
+    const targetIndex = agentIndex === this.system.user.index ? this.system.leadAgent.index : agentIndex;
+    
+    const agent = this.getAgent(targetIndex);
     if (!agent || !agent.canChat()) return null;
     const response = await agent.think(text, { isChat: true });
     return response.text;

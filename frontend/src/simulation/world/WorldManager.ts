@@ -24,6 +24,11 @@ export class WorldManager {
     loader.setDRACOLoader(dracoLoader);
     const officeGltf = await loader.loadAsync(`${import.meta.env.BASE_URL}models/office.glb`);
     this.office = officeGltf.scene;
+    
+    // Scale the office to make it bigger for more agents as requested
+    this.office.scale.set(1.5, 1.0, 1.5);
+    this.office.updateMatrixWorld(true);
+    
     this.scene.add(this.office);
 
     // Get current AgentSet color
@@ -38,7 +43,10 @@ export class WorldManager {
         const name = mesh.name.toLowerCase();
 
         if (name.includes('navmesh')) {
-          this.navMesh.loadFromGeometry(mesh.geometry);
+          // Use world matrix to ensure the navmesh is scaled correctly for pathfinding
+          const scaledGeometry = mesh.geometry.clone();
+          scaledGeometry.applyMatrix4(mesh.matrixWorld);
+          this.navMesh.loadFromGeometry(scaledGeometry);
           mesh.visible = false;
         } else {
           mesh.receiveShadow = true;

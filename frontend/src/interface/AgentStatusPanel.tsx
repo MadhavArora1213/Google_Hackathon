@@ -1,7 +1,10 @@
+import { Sparkles, Send } from 'lucide-react';
 import React from 'react';
 import { getAgentSet, getAllAgents, getAllCharacters } from '../data/agents';
 import { useCoreStore } from '../integration/store/coreStore';
 import { useTeamStore, useActiveTeam } from '../integration/store/teamStore';
+import { useUiStore } from '../integration/store/uiStore';
+import { useSceneManager } from '../simulation/SceneContext';
 import { Avatar } from './components/Avatar';
 
 import { formatTokens } from './ProjectView';
@@ -13,6 +16,7 @@ interface AgentStatusPanelProps {
 const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ agentIndex }) => {
   const { tasks } = useCoreStore();
   const system = useActiveTeam();
+  const scene = useSceneManager();
   const agents = getAllAgents(system);
 
   const agent = getAllCharacters(system).find(a => a.index === agentIndex);
@@ -23,6 +27,12 @@ const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ agentIndex }) => {
   ) ?? null;
 
   const usage = useCoreStore.getState().agentTokenUsage[agentIndex] || { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+
+  const handleQuickPrompt = async (val: string) => {
+    if (!val.trim()) return;
+    useUiStore.getState().setChatting(true);
+    await scene?.sendMessage(val);
+  };
 
   return (
     <div className="flex flex-col h-full p-6">
@@ -97,14 +107,46 @@ const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ agentIndex }) => {
 
       <div className="h-px bg-zinc-100 w-full mb-6" />
 
-      {/* Task Status */}
+      {/* Task Status / Quick Prompt */}
       {agent.index === 0 ? (
-        <div className="mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm animate-pulse">
-           <div className="flex items-center gap-2 mb-1">
-             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active Session</p>
+        <div className="flex flex-col gap-3">
+           <div className="flex items-center gap-2 mb-1 px-1">
+             <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-100/50 text-emerald-600">
+               <Sparkles size={14} />
+             </div>
+             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Master Prompt</p>
            </div>
-           <p className="text-xs font-bold text-emerald-800">Assigning tasks to agents...</p>
+           
+           <div className="relative group">
+              <textarea 
+                placeholder="What should the team do next?"
+                rows={4}
+                className="w-full bg-zinc-50/50 border border-zinc-100 rounded-2xl p-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/30 transition-all resize-none placeholder:text-zinc-300"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const val = (e.target as HTMLTextAreaElement).value;
+                    handleQuickPrompt(val);
+                    (e.target as HTMLTextAreaElement).value = '';
+                  }
+                }}
+              />
+              <div className="absolute bottom-3 right-3 opacity-0 group-focus-within:opacity-100 transition-opacity flex items-center gap-1.5">
+                 <span className="text-[9px] font-black text-zinc-300 uppercase tracking-tighter">Enter to send</span>
+              </div>
+           </div>
+           
+           <button 
+             onClick={(e) => {
+               const area = (e.currentTarget.previousSibling?.firstChild as HTMLTextAreaElement);
+               handleQuickPrompt(area.value);
+               area.value = '';
+             }}
+             className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all"
+           >
+              <Send size={14} strokeWidth={3} />
+              Dispatch Command
+           </button>
         </div>
       ) : activeTask ? (
         <div className="mb-6">

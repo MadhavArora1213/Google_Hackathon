@@ -17,6 +17,7 @@ export function useChatAvailability(agentIndex: number | null): ChatAvailability
   const system = useActiveTeam()
 
   if (agentIndex === null) return { canChat: false, reason: '' }
+  if (agentIndex === system.user.index) return { canChat: true, reason: '' }
   if (isGeneratingAsset) return { canChat: false, reason: 'Delivering...' }
   if (phase === 'done') return { canChat: false, reason: 'Project completed' }
 

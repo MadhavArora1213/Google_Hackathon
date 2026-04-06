@@ -54,7 +54,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
       name: 'Alex',
       description: 'The Orchestrator. Coordinates all sub-agents and decomposes complex tasks.',
       color: '#F9BC05',
-      model: DEFAULT_MODELS.text,
+      model: 'gemini-2.0-flash',
       skills: ['Task Decomposition', 'Agent Delegation', 'Workflow Execution', 'State Persistence'],
       humanInTheLoop: true,
       position: { x: 0, y: 130 },
@@ -65,7 +65,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Sam',
           description: 'The Scheduler. Manages calendars, detects conflicts, and finds free slots.',
           color: '#34A853',
-          model: DEFAULT_MODELS.text,
+          model: 'local-qwen-2.5-7b',
           skills: ['Calendar Management', 'Free Slot Detection', 'Conflict Resolution', 'Weather-Aware Scheduling'],
           position: { x: -400, y: 280 }
         },
@@ -75,7 +75,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Mia',
           description: 'The Task Manager. Manages Notion tasks, priorities, and deadlines.',
           color: '#6366F1',
-          model: DEFAULT_MODELS.text,
+          model: 'local-qwen-2.5-7b',
           skills: ['Notion Task Creation', 'Bulk Generation', 'Status Tracking', 'AI Prioritization'],
           position: { x: -200, y: 280 }
         },
@@ -85,7 +85,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Dev',
           description: 'The Email Agent. Summarizes inboxes and drafts professional communications.',
           color: '#EA4335',
-          model: DEFAULT_MODELS.text,
+          model: 'sarvam-indic-1',
           skills: ['Email Drafting', 'Inbox Summarization', 'Invite Generation'],
           position: { x: 0, y: 280 }
         },
@@ -95,7 +95,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Kai',
           description: 'The Comms Lead. Manages Slack notifications and real-time team updates.',
           color: '#9C27B0',
-          model: DEFAULT_MODELS.text,
+          model: 'sarvam-indic-1',
           skills: ['Slack Notifications', 'Workflow Status DMs'],
           position: { x: 200, y: 280 }
         },
@@ -105,7 +105,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Riya',
           description: 'The Researcher. Performs web searches and provides structured intelligence.',
           color: '#00BCD4',
-          model: DEFAULT_MODELS.text,
+          model: 'gemini-2.0-flash',
           skills: ['Web Research', 'Intelli-Briefings'],
           position: { x: 400, y: 280 }
         },
@@ -115,7 +115,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Neo',
           description: 'The Memory Keeper. Handles semantic storage and RAG-based recall.',
           color: '#607D8B',
-          model: DEFAULT_MODELS.text,
+          model: 'gemini-2.0-flash',
           skills: ['Semantic Storage', 'Vector Recall (RAG)'],
           position: { x: -300, y: 430 }
         },
@@ -125,7 +125,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Aria',
           description: 'The Data Analyst. Tracks productivity scores and burnout risks.',
           color: '#FF5722',
-          model: DEFAULT_MODELS.text,
+          model: 'gemini-2.0-flash',
           skills: ['Productivity Scoring', 'Burnout Detection', 'Weekly Reporting'],
           position: { x: -100, y: 430 }
         },
@@ -135,7 +135,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Finn',
           description: 'The File Specialist. Organizes Google Drive docs and workflow outputs.',
           color: '#795548',
-          model: DEFAULT_MODELS.text,
+          model: 'sarvam-indic-1',
           skills: ['Drive Management', 'File Search', 'Auto-Archive'],
           position: { x: 100, y: 430 }
         },
@@ -145,7 +145,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
           name: 'Luna',
           description: 'The Context Agent. Provides weather, location, and travel data.',
           color: '#E91E63',
-          model: DEFAULT_MODELS.text,
+          model: 'sarvam-indic-1',
           skills: ['Weather Analysis', 'Maps/Commute Logic'],
           position: { x: 300, y: 430 }
         }

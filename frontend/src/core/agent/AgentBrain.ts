@@ -80,7 +80,9 @@ export class AgentBrain {
       const systemPrompt = PromptBuilder.buildSystemPrompt(this.host.data, core.phase, core.userBrief, allAgents);
       const toolDefs = options.tools || ToolRegistry.getDefinitions(this.host.data.index, core.phase, this.host.data.subagents?.length || 0);
 
-      // 3. Log and Execute LLM Call
+      // 3. Log and Execute LLM Call or Backend Orchestration
+      const isLead = this.host.data.index === 1; // Alex is always index 1
+      
       core.addRequestLog({
         agentIndex: this.host.data.index,
         agentName: this.host.data.name,
@@ -90,12 +92,42 @@ export class AgentBrain {
         taskId: this.host.getCurrentTaskId() || undefined
       });
 
-      const response = await provider.generateCompletion(
-        messages,
-        toolDefs,
-        systemPrompt,
-        model
-      );
+      let response: any;
+
+      if (isLead && options.isChat) {
+        // Redirct to Backend Orchestrator for complex tasks
+        const backendResult = await fetch('http://localhost:8000/api/v1/orchestrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            task: prompt,
+            user_id: 'user_local',
+            context: {}
+          })
+        });
+        const workflow = await backendResult.json();
+        core.setWorkflowId(workflow.workflow_id);
+        
+        // Construct a synthetic response for the local history
+        response = {
+          content: `I've analyzed your request and orchestrated a ${workflow.steps.length}-step plan. The team is starting now.`,
+          tool_calls: workflow.steps.map((s: any, i: number) => ({
+            id: `call_${i}`,
+            type: 'function',
+            function: {
+              name: 'delegate_task',
+              arguments: JSON.stringify({ agent: s.agent, task: s.reason })
+            }
+          }))
+        };
+      } else {
+        response = await provider.generateCompletion(
+          messages,
+          toolDefs,
+          systemPrompt,
+          model
+        );
+      }
 
       // 4. Log Response
       core.addResponseLog({
@@ -110,7 +142,7 @@ export class AgentBrain {
 
       // 5. Parse Tool Calls
       const text = response.content || '';
-      const toolCalls = response.tool_calls?.map(tc => {
+      const toolCalls = response.tool_calls?.map((tc: any) => {
         try {
           return { name: tc.function.name, args: JSON.parse(tc.function.arguments) };
         } catch (e) {
@@ -163,7 +195,7 @@ export class AgentBrain {
         }
       }
 
-      return { text, toolCalls };
+      return { text: text || finalContent, toolCalls };
     } catch (error) {
       console.error(`[AgentBrain:${this.host.data.name}] Logic error:`, error);
       const errMsg = error instanceof Error ? error.message : String(error);

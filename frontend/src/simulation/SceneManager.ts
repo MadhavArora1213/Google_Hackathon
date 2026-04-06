@@ -121,7 +121,11 @@ export class SceneManager {
     new InputManager(
       this.engine.renderer.domElement, this.stage.camera,
       () => this.controller!.getCPUPositions(), () => this.controller!.getCount(),
-      (idx) => { if (useUiStore.getState().isChatting) useUiStore.getState().setChatting(false); this.selectedIndex = idx !== activeSet.user.index ? idx : null; useUiStore.getState().setSelectedNpc(this.selectedIndex); },
+      (idx) => { 
+        if (useUiStore.getState().isChatting) useUiStore.getState().setChatting(false); 
+        this.selectedIndex = idx; 
+        useUiStore.getState().setSelectedNpc(this.selectedIndex); 
+      },
       (x, z) => this.driverManager?.getPlayerDriver().onFloorClick(x, z),
       (idx, pos) => useUiStore.getState().setHoveredNpc(idx, pos),
       () => this.poiManager.getAllPois(),

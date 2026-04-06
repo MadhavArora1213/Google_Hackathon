@@ -105,9 +105,11 @@ interface CoreState {
   isFinalOutputOpen: boolean;
   logFilterAgentIndex: number | null;
   isResizing: boolean;
+  workflowId: string | null;
 
   // ── Actions — Project —————————————————————————————————────────
   setUserBrief: (brief: string) => void;
+  setWorkflowId: (id: string | null) => void;
   addReferenceImage: (base64: string) => void;
   removeReferenceImage: (index: number) => void;
   clearReferenceImages: () => void;
@@ -184,8 +186,10 @@ export const useCoreStore = create<CoreState>()(
       logFilterAgentIndex: null,
       isResizing: false,
       viewMode: 'simulation',
+      workflowId: null,
 
       setViewMode: (viewMode) => set({ viewMode }),
+      setWorkflowId: (workflowId) => set({ workflowId }),
 
       resetProject: () => set({
         userBrief: '',

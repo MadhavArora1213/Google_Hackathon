@@ -9,7 +9,7 @@ export const useUiStore = create<CharacterState>()(
     isThinking: false,
     instanceCount: getAllAgents(getActiveAgentSet()).length + 1, // +1 for user
 
-    selectedNpcIndex: null,
+    selectedNpcIndex: 0,
     selectedPosition: null,
     hoveredNpcIndex: null,
     hoveredPoiId: null,
@@ -20,10 +20,13 @@ export const useUiStore = create<CharacterState>()(
     isTyping: false,
     chatMessages: [],
     inspectorTab: 'info',
+    showInternalChat: false,
     agentStatuses: {},
     setAgentStatus: (index: number, status: AgentState) => set((s) => ({
       agentStatuses: { ...s.agentStatuses, [index]: status }
     })),
+
+    setShowInternalChat: (show: boolean) => set({ showInternalChat: show }),
 
     isBYOKOpen: false,
     byokError: null,

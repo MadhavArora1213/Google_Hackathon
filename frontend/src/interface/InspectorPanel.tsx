@@ -181,7 +181,13 @@ const InspectorPanel: React.FC<InspectorPanelProps> = ({ isFloating }) => {
                 /* Chat Action Button below name - ONLY SHOW IF NOT NEEDS DISCUSSION (OR IF CHATTING) */
                 <div className="w-full">
                   {agent.index === system.user.index ? (
-                    null // No chat button for the local player
+                    <button
+                      onClick={handleStartChat}
+                      className="w-full h-10 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest bg-darkDelegation text-white border-none shadow-md"
+                    >
+                      <MessageSquare size={13} className="text-white" />
+                      Open Workspace
+                    </button>
                   ) : isProjectReady ? (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex flex-col gap-3 shadow-sm">
                       <div className="flex items-center gap-2">

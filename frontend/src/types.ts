@@ -25,6 +25,8 @@ export interface CharacterState {
   isTyping: boolean;
   chatMessages: ChatMessage[];
   inspectorTab: 'info' | 'chat';
+  showInternalChat: boolean;
+  setShowInternalChat: (show: boolean) => void;
   
   // Real-time agent statuses for 3D synchronization
   agentStatuses: Record<number, AgentState>;
